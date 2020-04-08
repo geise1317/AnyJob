@@ -16,6 +16,7 @@ import java.util.Locale;
 
 import static com.example.anyjob.Util.isStorageUrl;
 
+//when user clicks the post, it shows brief description of the post
 public class PostActivity extends BasicActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,13 +49,13 @@ public class PostActivity extends BasicActivity {
                     ImageView imageView = new ImageView(this);
                     imageView.setLayoutParams(imagelayoutParams);
                     imagecontentsLayout.addView(imageView);
-                    Glide.with(this).load(contents).override(300).thumbnail(0.1f).into(imageView);
+                    Glide.with(this).load(contents).override(1000).thumbnail(0.1f).into(imageView);
                 }else {
                     TextView textView = new TextView(PostActivity.this);
                     textView.setLayoutParams(textlayoutParams);
                     textView.setText(contents);
                     textView.setTextColor(Color.rgb(0,0,0));
-                    textView.setMaxLines(2);
+                    //textView.setMaxLines(2);
                     textcontentsLayout.addView(textView);
                 }
             }

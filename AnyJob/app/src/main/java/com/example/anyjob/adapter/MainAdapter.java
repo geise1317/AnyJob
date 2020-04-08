@@ -22,7 +22,13 @@ import com.example.anyjob.PostInfo;
 import com.example.anyjob.R;
 import com.example.anyjob.activity.PostActivity;
 import com.example.anyjob.listener.OnPostListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -98,7 +104,6 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MainViewHolder
         ArrayList<String> contentsList = mDataset.get(position).getDescription();
 
         if(textcontentsLayout.getTag() == null || !textcontentsLayout.getTag().equals(contentsList)){
-            Log.d("태그", "태그");
             textcontentsLayout.removeAllViews();
             imagecontentsLayout.removeAllViews();
             final int MAX_ITEM_NUM = 2;
@@ -120,12 +125,6 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MainViewHolder
                     textView.setTextColor(Color.rgb(0,0,0));
                     textView.setMaxLines(2);
                     textcontentsLayout.addView(textView);
-                    /*if(textView.getLineCount() > 2){
-                        TextView moreTextView = new TextView(activity);
-                        moreTextView.setLayoutParams(textlayoutParams);
-                        moreTextView.setText("Show more...");
-                        textcontentsLayout.addView(moreTextView);
-                    }*/
                 }
             }
         }
@@ -156,6 +155,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MainViewHolder
         });
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.post, popup.getMenu());
+
         popup.show();
     }
 

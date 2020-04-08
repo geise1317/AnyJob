@@ -7,21 +7,51 @@
     android:layout_height="match_parent"
     tools:context="com.example.anyjob.activity.MainActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/main_RecyclerView"
+    <LinearLayout
+        android:id="@+id/SearchLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="5dp">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floatingActionButton"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginRight="10dp"
-        android:layout_marginBottom="10dp"
-        android:clickable="true"
-        app:backgroundTint="#FD0707"
-        app:srcCompat="@drawable/ic_add_black_24dp" />
+        <EditText
+            android:id="@+id/searchEditText"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:hint="Search"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"/>
+
+        <ImageButton
+            android:id="@+id/searchImageButton"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_search"
+            android:scaleType="fitCenter"/>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/SearchLayout">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/main_RecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floatingActionButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            app:backgroundTint="#FD0707"
+            app:srcCompat="@drawable/ic_add_black_24dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"/>
+    </RelativeLayout>
 
 </RelativeLayout>

@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -100,7 +101,8 @@ public class SignUpActivity extends BasicActivity {
                         }
                     } else {
                         // Permission has already been granted
-                        startActivity(GalleryActivity.class);
+                        //startActivity(GalleryActivity.class);
+                        startActivity(GalleryActivity.class, "image", 0);
                         Log.d("onclickListener", "permission already granted");
                     }
                     break;
@@ -116,7 +118,8 @@ public class SignUpActivity extends BasicActivity {
         switch (requestCode) {
             case 1: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(GalleryActivity.class);
+                    //startActivity(GalleryActivity.class);
+                    startActivity(GalleryActivity.class, "image", 0);
                 } else {
                     startToast(SignUpActivity.this, "Please Grant Permission.");
                 }
@@ -134,7 +137,7 @@ public class SignUpActivity extends BasicActivity {
         String phoneNum = ((EditText)findViewById(R.id.userPhoneNumEditText)).getText().toString();
         String age = ((EditText)findViewById(R.id.userAgeEditText)).getText().toString();
 
-        if(email.length() > 0 && password.length() > 0 && passwordCheck.length() > 0 && name.length() > 0 && address.length() > 0 && phoneNum.length() > 9 && age.length() > 0) {
+        if(email.length() > 0 && password.length() > 0 && passwordCheck.length() > 0 && name.length() > 0 && address.length() > 0 && phoneNum.length() > 7 && age.length() > 0) {
             if (password.equals(passwordCheck)) {
                 loaderLayout.setVisibility(View.VISIBLE);
                 mAuth.createUserWithEmailAndPassword(email, password)
@@ -196,12 +199,14 @@ public class SignUpActivity extends BasicActivity {
 
         if(name.length() > 0 && address.length() > 0 && phoneNum.length() > 9 && age.length() > 0){
             FirebaseStorage storage = FirebaseStorage.getInstance();
-            // Create a storage reference from our app
             StorageReference storageRef = storage.getReference();
-            // Create a reference to 'images/mountains.jpg'
+
             final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             final StorageReference mountainImagesRef = storageRef.child("users/" + user.getUid() + "/profileImage.jpg");
-
+            if(profilePath == null){
+                MemberInfo memberInfo = new MemberInfo(name, address, phoneNum, age);
+                storeUploader(memberInfo);
+            }
             try{
                 InputStream stream = new FileInputStream(new File(profilePath));
                 UploadTask uploadTask = mountainImagesRef.putStream(stream);
@@ -209,6 +214,7 @@ public class SignUpActivity extends BasicActivity {
                     @Override
                     public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
                         if (!task.isSuccessful()) {
+                            Log.e("Log", "storageUploader not succesful");
                             throw task.getException();
                         }
                         return mountainImagesRef.getDownloadUrl();
@@ -218,27 +224,39 @@ public class SignUpActivity extends BasicActivity {
                     public void onComplete(@NonNull Task<Uri> task) {
                         if (task.isSuccessful()) {
                             Uri downloadUri = task.getResult();
-                            Log.e("로그", "Complete: " + downloadUri);
+                            Log.d("Log", "Complete: " + downloadUri);
                             FirebaseFirestore db = FirebaseFirestore.getInstance();
                             MemberInfo memberInfo = new MemberInfo(name, address, phoneNum, age, downloadUri.toString());
                             if(user != null) {
                                 db.collection("users").document(user.getUid()).set(memberInfo);
+                                Log.d("Log", "Completed uploading to database");
                             }
 
                         } else {
                             // Handle failures
                             // ...
-                            Log.e("로그", "Fail");
+                            Log.e("Log", "Fail");
                         }
                     }
                 });
             }catch (FileNotFoundException e){
-                Log.e("로그", "Error: "+ e.toString());
+                Log.e("Log", "Error: "+ e.toString());
             }
         }
         else {
             startToast(SignUpActivity.this, "Please enter user information");
         }
         loaderLayout.setVisibility(View.GONE);
+    }
+
+    private void storeUploader(MemberInfo memberInfo){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        //db.collection("users").document()
+    }
+
+    private void startActivity(Class c, String media, int requestCode){
+        Intent intent = new Intent(this, c);
+        intent.putExtra("media", media);
+        startActivityForResult(intent, requestCode);
     }
 }

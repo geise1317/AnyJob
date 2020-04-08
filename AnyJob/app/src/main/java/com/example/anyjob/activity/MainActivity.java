@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
+import android.widget.EditText;
+
 import com.example.anyjob.PostInfo;
 import com.example.anyjob.R;
 import com.example.anyjob.Util;
@@ -19,6 +21,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -53,7 +60,6 @@ public class MainActivity extends BasicActivity {
         setContentView(R.layout.activity_main);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
         FirebaseStorage storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
 
@@ -86,6 +92,8 @@ public class MainActivity extends BasicActivity {
 
         recyclerView = findViewById(R.id.main_RecyclerView);
         findViewById(R.id.floatingActionButton).setOnClickListener(onClickListener);
+        findViewById(R.id.searchImageButton).setOnClickListener(onClickListener);
+
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
@@ -158,6 +166,9 @@ public class MainActivity extends BasicActivity {
                 case R.id.floatingActionButton:
                     startActivity(WritePostActivity.class);
                     break;
+                case R.id.searchImageButton:
+                    searchpostUpdate();
+                    break;
             }
         }
     };
@@ -203,5 +214,37 @@ public class MainActivity extends BasicActivity {
     protected void onResume() {
         super.onResume();
         postUpdate();
+    }
+
+    private void searchpostUpdate() {
+        String search = findViewById(R.id.searchEditText).toString();
+        if (firebaseUser != null) {
+            findViewById(R.id.floatingActionButton).setOnClickListener(onClickListener);
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+            //reference.child("posts").orderByChild("title").
+            com.google.firebase.database.Query queryRef = reference.orderByChild("title").startAt(search);
+            CollectionReference collectionReference = firebaseFirestore.collection("posts");
+            //collectionReference.orderBy("title").startAt(search).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            collectionReference.orderBy("createdAt", Query.Direction.DESCENDING).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
+                        postList.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Log.d(TAG, document.getId() + " => " + document.getData());
+                            postList.add(new PostInfo(
+                                    document.getData().get("title").toString(),
+                                    (ArrayList<String>) document.getData().get("description"),
+                                    document.getData().get("publisher").toString(),
+                                    new Date(document.getDate("createdAt").getTime()),
+                                    document.getId()));
+                        }
+                        mainAdapter.notifyDataSetChanged();
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                }
+            });
+        }
     }
 }
