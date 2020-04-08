@@ -22,6 +22,8 @@ import com.example.anyjob.MemberInfo;
 import com.example.anyjob.R;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,6 +47,7 @@ public class SignUpActivity extends BasicActivity {
     private ImageView profileImageView;
     private String profilePath;
     private RelativeLayout loaderLayout;
+    private FirebaseUser user;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -200,49 +203,51 @@ public class SignUpActivity extends BasicActivity {
         if(name.length() > 0 && address.length() > 0 && phoneNum.length() > 9 && age.length() > 0){
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
-
-            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            user = FirebaseAuth.getInstance().getCurrentUser();
             final StorageReference mountainImagesRef = storageRef.child("users/" + user.getUid() + "/profileImage.jpg");
             if(profilePath == null){
                 MemberInfo memberInfo = new MemberInfo(name, address, phoneNum, age);
                 storeUploader(memberInfo);
-            }
-            try{
-                InputStream stream = new FileInputStream(new File(profilePath));
-                UploadTask uploadTask = mountainImagesRef.putStream(stream);
-                uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                    @Override
-                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                        if (!task.isSuccessful()) {
-                            Log.e("Log", "storageUploader not succesful");
-                            throw task.getException();
-                        }
-                        return mountainImagesRef.getDownloadUrl();
-                    }
-                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Uri> task) {
-                        if (task.isSuccessful()) {
-                            Uri downloadUri = task.getResult();
-                            Log.d("Log", "Complete: " + downloadUri);
-                            FirebaseFirestore db = FirebaseFirestore.getInstance();
-                            MemberInfo memberInfo = new MemberInfo(name, address, phoneNum, age, downloadUri.toString());
-                            if(user != null) {
-                                db.collection("users").document(user.getUid()).set(memberInfo);
-                                Log.d("Log", "Completed uploading to database");
+            }else {
+                try{
+                    InputStream stream = new FileInputStream(new File(profilePath));
+                    UploadTask uploadTask = mountainImagesRef.putStream(stream);
+                    uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                            if (!task.isSuccessful()) {
+                                Log.e("Log", "storageUploader not succesful");
+                                throw task.getException();
                             }
-
-                        } else {
-                            // Handle failures
-                            // ...
-                            Log.e("Log", "Fail");
+                            return mountainImagesRef.getDownloadUrl();
                         }
-                    }
-                });
-            }catch (FileNotFoundException e){
-                Log.e("Log", "Error: "+ e.toString());
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful()) {
+                                Uri downloadUri = task.getResult();
+                                Log.d("Log", "Complete: " + downloadUri);
+                                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                                MemberInfo memberInfo = new MemberInfo(name, address, phoneNum, age, downloadUri.toString());
+                                //if(user != null) {
+                                    //db.collection("users").document(user.getUid()).set(memberInfo);
+                                    storeUploader(memberInfo);
+                                    Log.d("Log", "Completed uploading to database");
+                                //}
+
+                            } else {
+                                // Handle failures
+                                // ...
+                                Log.e("Log", "Fail");
+                            }
+                        }
+                    });
+                }catch (FileNotFoundException e){
+                    Log.e("Log", "Error: "+ e.toString());
+                }
+
             }
-        }
+            }
         else {
             startToast(SignUpActivity.this, "Please enter user information");
         }
@@ -251,6 +256,21 @@ public class SignUpActivity extends BasicActivity {
 
     private void storeUploader(MemberInfo memberInfo){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users").document(user.getUid()).set(memberInfo).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                startToast(SignUpActivity.this, "Succesfully registered.");
+                loaderLayout.setVisibility(View.GONE);
+                finish();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                startToast(SignUpActivity.this, "Error: Not registered.");
+                loaderLayout.setVisibility(View.GONE);
+                Log.w(TAG, "Error writing document", e);
+            }
+        });
         //db.collection("users").document()
     }
 
