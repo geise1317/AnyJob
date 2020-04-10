@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "846740434902",
+    "firebase_url": "https://anyjob-project.firebaseio.com",
+    "project_id": "anyjob-project",
+    "storage_bucket": "anyjob-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:846740434902:android:de70dbbf6e85bfa0a57e77",
+        "android_client_info": {
+          "package_name": "com.example.anyjob"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "846740434902-c3qc2nl47qbolvnhilsuqmbsbtdpjl3f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXH4zYHy7pnac31epWr8Wm9gKtBnjFw2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "846740434902-c3qc2nl47qbolvnhilsuqmbsbtdpjl3f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
